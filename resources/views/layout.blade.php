@@ -33,7 +33,7 @@
 					</li>
 				</ul>
 			</nav>
-			<h3 class="text-muted">Pay Less</h3>
+			<h3 class="text-muted">Pay Less <span class="badge badge-secondary">Contador: {{$count}}</span></h3>
 		</div>
 
 		@yield('content')
