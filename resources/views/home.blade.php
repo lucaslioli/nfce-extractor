@@ -11,6 +11,10 @@
 		<p>Este projeto está sendo desenvolvido para a disciplina de Projeto de Software II, no curso de Sistemas de Informação da Universidade Federal de Santa Maria. O propósito da aplicação é auxíliar na localização e comparação de ofertas de produtos em estabelecimentos que forneçam Nota Fiscal de Consumidor Eletrônica, a NFC-e.</p>
 	</div>
 
+	<div class="alert alert-info text-center" role="alert">
+	  <strong>OBS.:</strong> Não iremos armazenar nenhuma informação relacionada ao consumidor!
+	</div>
+
 	<div class="row marketing">
 		<div class="col-lg-6">
 			<h4> Dra. Andrea Charão</h4>
