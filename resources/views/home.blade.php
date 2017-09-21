@@ -1,9 +1,5 @@
 @extends('layout')
 
-@section('script')
-	<script type="text/javascript" src="/js/file.js"></script>
-@endsection
-
 @section('content')
 	<div class="jumbotron">
 		<h1 class="display-6">Extração de dados da NFC-e</h1>
@@ -12,7 +8,7 @@
 	</div>
 
 	<div>
-		<p>Este projeto está em desenvolvido para a disciplina de Projeto de Software II, no curso de Sistemas de Informação da Universidade Federal de Santa Maria. O propósito da aplicação é auxíliar na localização e comparação de ofertas de produtos em estabelecimentos que forneçam Nota Fiscal de Consumidor Eletrônica, a NFC-e.</p>
+		<p>Este projeto está sendo desenvolvido para a disciplina de Projeto de Software II, no curso de Sistemas de Informação da Universidade Federal de Santa Maria. O propósito da aplicação é auxíliar na localização e comparação de ofertas de produtos em estabelecimentos que forneçam Nota Fiscal de Consumidor Eletrônica, a NFC-e.</p>
 	</div>
 
 	<div class="row marketing">

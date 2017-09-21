@@ -15,7 +15,7 @@ class CreateNfcesTable extends Migration
     {
         Schema::create('nfces', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('access_key');
+            $table->string('access_key')->unique();
             $table->timestamps();
         });
     }
