@@ -19,7 +19,7 @@
 		<h5>Onde encontrar a Chave de Acesso</h5>
 		<p>Número de 44 digitos, encontrado geralmente na parte superior ou inferior da	Nota, próximo aos dados do consumidor e junto dos demai dados referentes a própria NFC-e.</p>
 		<div class="text-center">
-			<img src="example-nfce.jpg" width="500px">
+			<img src="example-nfce.jpg" width="375px">
 		</div>
 		<br/>
 	</div>

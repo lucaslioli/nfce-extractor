@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>NFC-E Data Extact</title>
+	<title>NFC-E Data Extract</title>
 	<link rel="icon" type="image/png" href="https://cdn1.iconfinder.com/data/icons/CrystalClear/22x22/actions/ark_extract.png">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
