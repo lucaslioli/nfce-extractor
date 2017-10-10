@@ -12,7 +12,7 @@ class Nfce extends Model
 	protected $fillable = ['access_key'];
 
     /**
-	 * [get_content description]
+	 * Retorna todo conteúdo da página contendo a nota
 	 * @param  String $key Chave de acesso da NFC-e
 	 * @return String      Tabela com todas as informações da NFC-e
 	 */
@@ -33,6 +33,30 @@ class Nfce extends Model
 		$content = strstr($content, "<table");
 		$content = substr($content, 0, strpos($content, "Versão XSLT"));
 		$content = substr($content, 0, strrpos($content, "<tr>"))."</table>";
+
+		return $content;
+	}
+
+	/**
+	 * Retorna todo conteúdo da página contendo as informações da nota em abas
+	 * @param  String $key Chave de acesso da NFC-e
+	 * @return String      Tabela com todas as informações da NFC-e
+	 */
+	public static function get_nfce_content_flaps($key)
+	{
+		$link = "https://www.sefaz.rs.gov.br/ASP/AAE_ROOT/NFE/SAT-WEB-NFE-COM_2.asp?chaveNFe=".$key."&HML=false&NF=F082C5B49";
+
+		// Busca conteúdo do link
+		$content = utf8_encode(file_get_contents($link));
+		// Verifica se o link é válido
+		if(strpos($content, "chaveNFe") === FALSE)
+			return FALSE;
+		// Elimina os espapaços indesejados da string
+		$content = trim(preg_replace('/\s+/', ' ', $content));
+		// Seleciona apenas a parte do body que contem as abas
+		$content = explode("</script><body>", $content)[1];
+		// Separa apenas a parte que possui os dados, elemina os botões do final
+		$content = substr($content, 0, strpos($content, "</body>"));
 
 		return $content;
 	}
@@ -149,7 +173,7 @@ class Nfce extends Model
 		// Inicializa um objeto DOM
 		$dom = new DOMDocument;
 		// Descarta os espaços em branco
-		$dom->preserveWhiteSpace = false;   
+		$dom->preserveWhiteSpace = false;
 		// Carrega o conteúdo como HTML
 		$dom->loadHTML(utf8_decode($content));
 		// Seleciona todos os elementos table
