@@ -3,8 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use DOMDocument;
-use DOMElement;
+use DOMDocument, DOMElement;
 use Exeption;
 
 class Nfce extends Model
@@ -38,11 +37,11 @@ class Nfce extends Model
 	}
 
 	/**
-	 * Retorna todo conteúdo da página contendo as informações da nota em abas
+	 * Igual a get_nfce_content() porém, extrai os dados mais completos
 	 * @param  String $key Chave de acesso da NFC-e
 	 * @return String      Tabela com todas as informações da NFC-e
 	 */
-	public static function get_nfce_content_flaps($key)
+	public static function get_nfce_content_tabs($key)
 	{
 		$link = "https://www.sefaz.rs.gov.br/ASP/AAE_ROOT/NFE/SAT-WEB-NFE-COM_2.asp?chaveNFe=".$key."&HML=false&NF=F082C5B49";
 
@@ -53,8 +52,8 @@ class Nfce extends Model
 			return FALSE;
 		// Elimina os espapaços indesejados da string
 		$content = trim(preg_replace('/\s+/', ' ', $content));
-		// Seleciona apenas a parte do body que contem as abas
-		$content = explode("</script><body>", $content)[1];
+		// Seleciona apenas a parte do body que contem as abas (outra opção é '</script><body>')
+		$content = explode("</b></li></ul>", $content)[1];
 		// Separa apenas a parte que possui os dados, elemina os botões do final
 		$content = substr($content, 0, strpos($content, "</body>"));
 
@@ -135,6 +134,42 @@ class Nfce extends Model
 	}
 
 	/**
+	 * Igual a get_nfce_data() porém, extrai os dados mais completos
+	 * @param  DOMElement $div Objeto que contem a tabela com os dados
+	 * @return Array            Array com os dados da NFC-e
+	 */
+	public static function get_nfce_data_tabs(DOMElement $div)
+	{
+		$content = array();
+		// TABELA 4 - DAdos da NFC-e: Número, Serie, Data, Chave e Protocolo
+		$cols = $div->getElementsByTagName('td');
+		$flag = NULL;
+		foreach ($cols as $col) {
+			$label = $col->getElementsByTagName('label')->item(0);
+			
+			if($label){
+				if(stripos($label->nodeValue, "Série") !== FALSE){
+					$content['serie'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Número") !== FALSE){
+					$content['numero'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Data de Emissão") !== FALSE){
+					// ex: " dd/mm/yyyy h:i:s"
+					$data = explode(" ", $col->getElementsByTagName('span')->item(0)->nodeValue);
+					$content['data_emissao'] = $data[0];
+					$content['hora_emissao'] = $data[1];
+				
+				}else if(stripos($label->nodeValue, "Protocolo") !== FALSE){
+					$input = $div->getElementsByTagName('input')->item(0);
+					$content['protocolo'] = $input->getAttribute ('value');
+				}
+			}
+		}
+		return $content;
+	}
+
+	/**
 	 * Extrai os dados dos Produtos a partir de objeto DOMElement
 	 * @param  DOMElement $table Objeto que contem a tabela com todos os produtos
 	 * @return Array             Array com os dados dos produtos
@@ -207,5 +242,38 @@ class Nfce extends Model
 			return "Chave de acesso já cadastrada!";
 			// return $e->getMessage();
 		}
+	}
+
+	/**
+	 * Igual a get_all_data() porém, extrai os dados mais completos
+	 * @param  int  $key       chave de acesso da nota com 44 dígitos
+	 * @param  int  $just_show Opcional. Se for 1, não irá gravar no banco. Default: 0
+	 * @return void            retorna array com todos os dados ou mensagem de erro
+	 */
+	public static function get_all_data_tabs($key, int $just_show = 0)
+	{
+		$content = self::get_nfce_content_tabs($key);
+
+    	if($content == FALSE)
+    		return 'Chave de Acesso inválida!';
+
+		// Inicializa um objeto DOM
+		$dom = new DOMDocument;
+		// Descarta os espaços em branco
+		$dom->preserveWhiteSpace = false;
+		// Carrega o conteúdo como HTML (Utilizado o @ devido a erro interno da lib)
+		@$dom->loadHTML(utf8_decode($content));
+
+		// Seleciona todos os elementos table
+		$elements = $dom->getElementsByTagName('div');
+		
+		$data = array();
+		
+		// Dados da NF-e - div aba_nft_0
+		$data['nfce'] = self::get_nfce_data_tabs($elements->item(1));
+		$data['nfce']['chave_acesso'] = $key;
+		
+		dd($data);
+		return $data;
 	}
 }
