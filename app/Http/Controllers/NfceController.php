@@ -32,7 +32,7 @@ class NfceController extends Controller
         if(strlen($key)!=44)
             return view('show_nfce', ['data' => 'Chave de Acesso menor que 44 dígitos!', 'count' => Nfce::count()]);
 
-        $data = Nfce::get_all_data($key);
+        $data = Nfce::get_all_data_tabs($key, true);
 
         return view('show_nfce', ['data' => $data, 'count' => Nfce::count()]);
     }
