@@ -126,6 +126,9 @@ class Nfce extends Model
 				}else if(stripos($label->nodeValue, "Bairro") !== FALSE){
 					$content['bairro'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
 				
+				}else if(stripos($label->nodeValue, "CEP") !== FALSE){
+					$content['cep'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
 				}else if(stripos($label->nodeValue, "Município") !== FALSE && !isset($content['cidade'])){
 					$cidade = $col->getElementsByTagName('span')->item(0)->nodeValue;
 					$cidade = explode('- ', $cidade);
@@ -388,7 +391,7 @@ class Nfce extends Model
 
 		// Dados da Empresa - div aba_nft_1
 		$data['estabelecimento'] = self::get_company_data_tabs($elements->item(3));
-		
+
 		// Dados da Empresa - div aba_nft_3
 		$data['produtos'] = self::get_products_data_tabs($elements->item(17));
 		
