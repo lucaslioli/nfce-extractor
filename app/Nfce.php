@@ -136,11 +136,13 @@ class Nfce extends Model
 						$content['cidade'] = $cidade[1];
 					}else{
 						$content['cidade'] = $cidade;
-					}
-					
+					}	
 				
 				}else if(stripos($label->nodeValue, "UF") !== FALSE){
 					$content['uf'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Telefone") !== FALSE){
+					$content['telefone'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
 				}
 			}
 		}
