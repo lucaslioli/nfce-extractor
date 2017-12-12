@@ -45,6 +45,8 @@ class Nfce extends Model
 	{
 		$link = "https://www.sefaz.rs.gov.br/ASP/AAE_ROOT/NFE/SAT-WEB-NFE-COM_2.asp?chaveNFe=".$key."&HML=false&NF=F082C5B49";
 
+		// $link = "localpathfortests";
+
 		// Busca conteúdo do link
 		$content = utf8_encode(file_get_contents($link));
 		// Verifica se o link é válido
@@ -97,6 +99,53 @@ class Nfce extends Model
 	}
 
 	/**
+	 * Igual a get_company_data() porém, extrai os dados mais completos
+	 * @param  DOMElement $div Objeto que contem os dados
+	 * @return Array           Array com os dados do estabelecimento
+	 */
+	public static function get_company_data_tabs(DOMElement  $div)
+	{
+		$content = array();
+		// Dados do ESTABELECIMENTO: Nome, CNPJ, Inscrição Estadual
+		$cols = $div->getElementsByTagName('td');
+		foreach ($cols as $col) {
+			$label = $col->getElementsByTagName('label')->item(0);
+
+			if($label){
+				// $label->nodeValue = utf8_decode($label->nodeValue);
+
+				if(stripos($label->nodeValue, "Razão Social") !== FALSE){
+					$content['serie'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "CNPJ") !== FALSE){
+					$content['cnpj'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Endereço") !== FALSE){
+					$content['endereco'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Bairro") !== FALSE){
+					$content['bairro'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				
+				}else if(stripos($label->nodeValue, "Município") !== FALSE && !isset($content['cidade'])){
+					$cidade = $col->getElementsByTagName('span')->item(0)->nodeValue;
+					$cidade = explode('- ', $cidade);
+					if(isset($cidade[1])){
+						$content['cidade'] = $cidade[1];
+					}else{
+						$content['cidade'] = $cidade;
+					}
+					
+				
+				}else if(stripos($label->nodeValue, "UF") !== FALSE){
+					$content['uf'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+				}
+			}
+		}
+
+		return $content;
+	}
+
+	/**
 	 * Extrai os dados da NFC-e a partir de objeto DOMElement
 	 * @param  DOMElement $table Objeto que contem a tabela com os dados
 	 * @return Array             Array com os dados da NFC-e
@@ -136,18 +185,19 @@ class Nfce extends Model
 	/**
 	 * Igual a get_nfce_data() porém, extrai os dados mais completos
 	 * @param  DOMElement $div Objeto que contem a tabela com os dados
-	 * @return Array            Array com os dados da NFC-e
+	 * @return Array           Array com os dados da NFC-e
 	 */
 	public static function get_nfce_data_tabs(DOMElement $div)
 	{
 		$content = array();
-		// TABELA 4 - DAdos da NFC-e: Número, Serie, Data, Chave e Protocolo
+		// Dados da NFC-e: Número, Serie, Data e Protocolo
 		$cols = $div->getElementsByTagName('td');
-		$flag = NULL;
 		foreach ($cols as $col) {
 			$label = $col->getElementsByTagName('label')->item(0);
 			
 			if($label){
+				// $label->nodeValue = utf8_decode($label->nodeValue);
+
 				if(stripos($label->nodeValue, "Série") !== FALSE){
 					$content['serie'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
 				
@@ -162,7 +212,7 @@ class Nfce extends Model
 				
 				}else if(stripos($label->nodeValue, "Protocolo") !== FALSE){
 					$input = $div->getElementsByTagName('input')->item(0);
-					$content['protocolo'] = $input->getAttribute ('value');
+					$content['protocolo'] = $input->getAttribute('value');
 				}
 			}
 		}
@@ -187,6 +237,69 @@ class Nfce extends Model
 			$data[$i]['descricao'] = $cols->item(1)->nodeValue;
 			$data[$i]['valor'] = $cols->item(4)->nodeValue;
 			$data[$i]['un'] = $cols->item(3)->nodeValue;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Extrai os dados dos Produtos a partir de objeto DOMElement
+	 * @param  DOMElement $div Objeto que contem a tabela com todos os produtos
+	 * @return Array           Array com os dados dos produtos
+	 */
+	public static function get_products_data_tabs(DOMElement $div)
+	{
+		$data = array();
+		$tables = $div->getElementsByTagName('table');
+		
+		/**
+		 * Cada produto na nota possui 2 tabelas principais (e internas) de dados dentro da div "aba_nft_3";
+		 * Na aba de produtos, o cabeçalho seria a tabela 0, ao buscar pela lista de tabelas, por isso $i=1;
+		 * A lista de tabelas retorna também as tabelas filhas, o que permitiria a replicação de dados;
+		 * Cada uma das 2 tabelas principais possui a classe "toggle" ou "toggable";
+		 * Essas classes são verificadas, assim é possível pegar todas as TDs internas com segurança;
+		 */
+		
+		$c = 0;
+		for ($i=1; $i < $tables->length; $i++) {
+			$classe = $tables->item($i)->getAttribute("class");
+
+			if(stripos($classe, "toggle") !== FALSE){
+				$cols = $tables->item($i)->getElementsByTagName('td');
+				
+				foreach ($cols as $col) {
+					if($col->getAttribute("class")=="fixo-prod-serv-descricao"){
+						$data[$c]['descricao'] = $col->nodeValue;
+					}else if ($col->getAttribute("class")=="fixo-prod-serv-uc"){
+						$data[$c]['un'] = $col->nodeValue;
+					}
+				}
+
+			}else if(stripos($classe, "toggable") !== FALSE){
+				$cols = $tables->item($i)->getElementsByTagName('td');
+
+				foreach ($cols as $col) {
+					$label = $col->getElementsByTagName('label')->item(0);
+					
+					if($label){
+						// $label->nodeValue = utf8_decode($label->nodeValue);
+		
+						if(stripos($label->nodeValue, "Código do Produto") !== FALSE){
+							$data[$c]['codigo'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+						
+						}else if(stripos($label->nodeValue, "Código NCM") !== FALSE){
+							$data[$c]['ncm'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+						
+						}else if(stripos($label->nodeValue, "Código EAN Comercial") !== FALSE){
+							$data[$c]['ean'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+						
+						}else if(stripos($label->nodeValue, "Valor unitário de comercialização") !== FALSE){
+							$data[$c]['valor'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+						}
+					}
+				}
+				$c++;
+			}
 		}
 
 		return $data;
@@ -272,8 +385,23 @@ class Nfce extends Model
 		// Dados da NF-e - div aba_nft_0
 		$data['nfce'] = self::get_nfce_data_tabs($elements->item(1));
 		$data['nfce']['chave_acesso'] = $key;
+
+		// Dados da Empresa - div aba_nft_1
+		$data['estabelecimento'] = self::get_company_data_tabs($elements->item(3));
 		
-		dd($data);
-		return $data;
+		// Dados da Empresa - div aba_nft_3
+		$data['produtos'] = self::get_products_data_tabs($elements->item(17));
+		
+		if($just_show)
+			return $data;
+		
+		try {
+			Nfce::create(['access_key' => $key]);
+			return $data;
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			return "Chave de acesso já cadastrada!";
+			// return $e->getMessage();
+		}
 	}
 }

@@ -13,10 +13,12 @@
 				echo "<table class='table'>
 						<tr>
 							<th>#</th>
-							<th>Código</th>
 							<th>Descricao</th>
-							<th>Valor</th>
 							<th>UN</th>
+							<th>Código</th>
+							<th>NCM</th>
+							<th>EAN</th>
+							<th>Valor</th>
 						</tr>";
 			
 			foreach ($value as $k => $v) {
