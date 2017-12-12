@@ -115,7 +115,7 @@ class Nfce extends Model
 				// $label->nodeValue = utf8_decode($label->nodeValue);
 
 				if(stripos($label->nodeValue, "Razão Social") !== FALSE){
-					$content['serie'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
+					$content['nome'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
 				
 				}else if(stripos($label->nodeValue, "CNPJ") !== FALSE){
 					$content['cnpj'] = $col->getElementsByTagName('span')->item(0)->nodeValue;
